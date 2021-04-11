@@ -1,6 +1,6 @@
 # pyDPQCQP
 
-This is simple python module for quickly calculating a dual bound
+This is a simple python module for quickly calculating a dual bound
 to the primal problem
 
 ```
@@ -18,9 +18,8 @@ and A2 full rank.
 - p is assumed to be small, i.e. only a few quadratic inequality constraints.
 
 The packages requires an installation of CMake, a decent C++ compiler as well as `cyipopt`, `scipy` and
-`numpy` to interface the IPOPT solver. All required
-C++ libraries (`Blaze`, `pybind11`, ..) will automatically
-be downloaded by CMake.
+`numpy` to interface the IPOPT solver. In additon, it requires the `cplex` and `gurobipy` python packages. 
+All required C++ libraries (`Blaze`, `pybind11`, ..) will automatically be downloaded by CMake.
 
 To install the package, simple clone this repo and
 run
