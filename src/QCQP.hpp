@@ -69,7 +69,7 @@ class QCQP {
                   std::vector<std::vector<double>>& Qs,
                   std::vector<std::vector<double>>& cs, std::vector<double>& rs,
                   std::vector<double>& A1, std::vector<double>& b1,
-                  std::vector<double>& _alphas_tmp);
+                  std::vector<double>& _alphas_tmp, bool use_nontrivial_alphas = false);
 
     // Destructor
     ~QCQP() = default;

@@ -157,21 +157,21 @@ class DPQCQP:
         self.runtime = int((t_end - t_start)*1e3)  # runtime in ms
         self.objVal = -1 * res.fun
 
-    def __solve_v3(self, alphas):
+    def __solve_v3(self, alphas, use_nontrivial_alphas):
         if self.fixed_values is not None:
             res = solveDPQCQP(self.Q0, self.c0, self.r0, self.Qs, self.cs,
-                              self.rs, self.A1, self.b1, self.A2_v3, self.b2_v3, alphas, self.fixed_values)
+                              self.rs, self.A1, self.b1, self.A2_v3, self.b2_v3, alphas, self.fixed_values, use_nontrivial_alphas)
             self.objVal, self.runtime, self.t_rref, self.best_alpha, self.best_mu = res
         else:
             print("No fixed_values set. First run method v1 or v2 and apply the bounds.")
 
-    def solve(self, method, alphas=None, initial_point=None):
+    def solve(self, method, alphas=None, use_nontrivial_alphas=False, initial_point=None):
         if method == "v1":
             self.__solve_v1(initial_point)
         if method == "v2":
             self.__solve_v2(initial_point)
         if method == "v3" and alphas is not None:
-            self.__solve_v3(alphas)
+            self.__solve_v3(alphas, use_nontrivial_alphas)
 
     def getInfo(self):
         return self.objVal, self.runtime, self.t_rref
