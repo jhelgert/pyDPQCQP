@@ -12,7 +12,7 @@ s.t. g_i(x) = 0.5 * x' * Qi * x + ci' * x + r0 <= 0 for all i = 1, .., p
 ```
 
 - Here all the matrices Q0, ..., Qp are assumed to be symmetric positive definite, 
-i.e. the primal problem is convex.
+i.e. f and g_i are strictly convex and the primal problem is convex.
 - The matrices A1 and A2 have dimensions (m1, n) and (m2, n) with m2 <= n
 and A2 full rank.
 - p is assumed to be small, i.e. only a few quadratic inequality constraints.
