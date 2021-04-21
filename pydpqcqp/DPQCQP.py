@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
 
-# Jonathan Helgert (jhelgert@mail.uni-mannheim.de)
-
 import numpy as np
 from scipy.linalg import solve
 from time import perf_counter
@@ -38,15 +36,20 @@ class DPQCQP:
     def set_max_iters(self, max_iters):
         self.max_iters = max_iters
 
-    def apply_bounds(self, bounds):
+    def apply_bounds(self, fixed_vars_indices, bounds):
+        assert fixed_vars_indices.shape == bounds.shape, "shape mismatch"
+        self.fixed_vars_indices = fixed_vars_indices
         self.fixed_values = bounds
         # Start timing for rref
         t_start = perf_counter()
         # Incorporate fixed values into A2, i.e. set the first 3*fac
         # integer variabls to zero and use rref to transform A2
         # into max rank.
+        A2bounds = np.zeros((bounds.shape[0], self.c0.shape[0]))
+        for i, k in enumerate(fixed_vars_indices):
+            A2bounds[i, k] = 1.0
         A2tmp1 = np.vstack(
-            (self.A2, np.eye(bounds.shape[0], self.c0.shape[0])))
+            (self.A2, A2bounds))
         b2tmp1 = np.hstack((self.b2, bounds))
         _, jb = rref(A2tmp1.copy().T)
         self.A2 = A2tmp1[jb, :]
@@ -160,7 +163,7 @@ class DPQCQP:
     def __solve_v3(self, alphas, use_nontrivial_alphas):
         if self.fixed_values is not None:
             res = solveDPQCQP(self.Q0, self.c0, self.r0, self.Qs, self.cs,
-                              self.rs, self.A1, self.b1, self.A2_v3, self.b2_v3, alphas, self.fixed_values, use_nontrivial_alphas)
+                              self.rs, self.A1, self.b1, self.A2_v3, self.b2_v3, alphas, self.fixed_vars_indices, self.fixed_values, use_nontrivial_alphas)
             self.objVal, self.runtime, self.t_rref, self.best_alpha, self.best_mu = res
         else:
             print("No fixed_values set. First run method v1 or v2 and apply the bounds.")

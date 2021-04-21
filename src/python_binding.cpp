@@ -11,7 +11,7 @@
 #include "QCQP.hpp"
 
 using json = nlohmann::json;
-using ms = std::chrono::milliseconds;
+using ms   = std::chrono::milliseconds;
 
 namespace py = pybind11;
 
@@ -25,9 +25,9 @@ inline py::array_t<T> toPyArray(std::vector<T>&& passthrough) {
     });
 
     auto passthroughNumpy =
-        py::array_t<T>({transferToHeapGetRawPtr->size()}, // shape
-                       {sizeof(T)},                       // strides
-                       transferToHeapGetRawPtr->data(),   // ptr
+        py::array_t<T>({transferToHeapGetRawPtr->size()},  // shape
+                       {sizeof(T)},                        // strides
+                       transferToHeapGetRawPtr->data(),    // ptr
                        freeWhenDone);
     return passthroughNumpy;
 }
@@ -38,11 +38,12 @@ py::tuple solveDPQCQP(py::array_t<double> _Q0, py::array_t<double> _c0,
                       py::array_t<double> _A1, py::array_t<double> _b1,
                       py::array_t<double> _A2, py::array_t<double> _b2,
                       py::array_t<double> _alpha_vals,
+                      py::array_t<double> fixed_vars_indices,
                       py::array_t<double> fixed_vals,
                       bool use_nontrivial_alphas = false) {
     // Dimensions
-    size_t n = _c0.size();
-    size_t p = _Qs.size();
+    size_t n  = _c0.size();
+    size_t p  = _Qs.size();
     size_t m1 = _b1.size();
     size_t m2 = _b2.size();
 
@@ -76,17 +77,20 @@ py::tuple solveDPQCQP(py::array_t<double> _Q0, py::array_t<double> _c0,
     // the (m2 x n) top submatrix with A2 from the json file
     // We will later incorporate the active bounds into A2
     // and b2
-    BMat A2_tmp = blaze::zero<double>(m2 + n, n);
-    BVec b2_tmp = blaze::zero<double>(m2 + n);
+    BMat A2_tmp      = blaze::zero<double>(m2 + n, n);
+    BVec b2_tmp      = blaze::zero<double>(m2 + n);
     auto A2_tmp_view = blaze::submatrix(A2_tmp, 0UL, 0UL, m2, n);
     auto b2_tmp_view = blaze::subvector(b2_tmp, 0UL, m2);
-    A2_tmp_view = BMat(m2, n, _A2.data());
-    b2_tmp_view = BVec(m2, _b2.data());
+    A2_tmp_view      = BMat(m2, n, _A2.data());
+    b2_tmp_view      = BVec(m2, _b2.data());
 
     // Set the integer variables all to fixed_vals
-    std::vector<size_t> active_indices(fixed_vals.size(), 0UL);
-    std::iota(active_indices.begin(), active_indices.end(), 0UL);
-    std::vector<double> active_bounds(fixed_vals.size(), 0.0);
+    std::vector<size_t> active_indices(
+        fixed_vars_indices.data(),
+        fixed_vars_indices.data() + fixed_vars_indices.size());
+    // std::iota(active_indices.begin(), active_indices.end(), 0UL);
+    std::vector<double> active_bounds(fixed_vals.data(),
+                                      fixed_vals.data() + fixed_vals.size());
 
     // Create the QCQP problem
     QCQP prob1(Q0, c0, r0, Qs, cs, rs, A1, b1, alpha_vals,
@@ -99,17 +103,17 @@ py::tuple solveDPQCQP(py::array_t<double> _Q0, py::array_t<double> _c0,
     // max. rank (i.e. call rref)
     auto [A2, b2] = apply_active_bounds(active_indices, active_bounds, A2_tmp,
                                         b2_tmp, n, m2);
-    auto te_rref = std::chrono::steady_clock::now();
-    auto t_rref = std::chrono::duration_cast<ms>(te_rref - ts_rref).count();
+    auto te_rref  = std::chrono::steady_clock::now();
+    auto t_rref   = std::chrono::duration_cast<ms>(te_rref - ts_rref).count();
 
     // Find the best dual bound
     auto start = std::chrono::steady_clock::now();
     prob1.findBestDualBound(A2, b2);
-    auto end = std::chrono::steady_clock::now();
+    auto end    = std::chrono::steady_clock::now();
     auto t_calc = std::chrono::duration_cast<ms>(end - start).count();
 
     // Get the best lagrangian multiplier mu and alpha
-    auto best_mu = prob1.getBestMu();
+    auto best_mu    = prob1.getBestMu();
     auto best_alpha = prob1.getBestAlpha();
 
     auto mu_vec =

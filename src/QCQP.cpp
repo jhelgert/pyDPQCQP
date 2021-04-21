@@ -49,22 +49,22 @@ QCQP::QCQP(std::string json_filename, std::vector<double>& _alphas_tmp,
     std::vector<size_t> B_tmp = j["B"];
     std::vector<size_t> J_tmp = j["J"];
 
-    p = j["p"];
-    n = j["n"];
+    p  = j["p"];
+    n  = j["n"];
     m1 = j["m1"];
     m2 = j["m2"];
-    l = B_tmp.size();
-    r = J_tmp.size();
+    l  = B_tmp.size();
+    r  = J_tmp.size();
 
     // Initialize the blaze matrices and vectors
     // Hier evtl. std::move verwenden?
 
-    Q0 = BMat(n, n, helpers::flatten(Q0_tmp).data());
-    A1 = BMat(m1, n, helpers::flatten(A1_tmp).data());
+    Q0  = BMat(n, n, helpers::flatten(Q0_tmp).data());
+    A1  = BMat(m1, n, helpers::flatten(A1_tmp).data());
     A1T = blaze::trans(A1);
-    c0 = BVec(n, c0_tmp.data());
-    b1 = BVec(m1, b1_tmp.data());
-    rs = blaze::zero<double>(p);
+    c0  = BVec(n, c0_tmp.data());
+    b1  = BVec(m1, b1_tmp.data());
+    rs  = blaze::zero<double>(p);
 
     // Primal quadr. ineq. constraints
     for (size_t i = 0; i < p; ++i) {
@@ -93,7 +93,7 @@ QCQP::QCQP(std::string json_filename, std::vector<double>& _alphas_tmp,
         for (const auto& val : alphas_tmp) {
             for (size_t i = 0; i < p; ++i) {
                 BVec tmp = blaze::zero<double>(p);
-                tmp[i] = val;
+                tmp[i]   = val;
                 alphas.push_back(tmp);
             }
         }
@@ -128,8 +128,12 @@ QCQP::QCQP(std::vector<double>& _Q0, std::vector<double>& _c0, double _r0,
            std::vector<std::vector<double>>& _cs, std::vector<double>& _rs,
            std::vector<double>& _A1, std::vector<double>& _b1,
            std::vector<double>& _alphas_tmp, bool use_nontrivial_alphas)
-    : n(_c0.size()), p(_Qs.size()), m1(_b1.size()), Q0(BMat(n, n, _Q0.data())),
-      c0(BVec(n, _c0.data())), r0(_r0) {
+    : n(_c0.size()),
+      p(_Qs.size()),
+      m1(_b1.size()),
+      Q0(BMat(n, n, _Q0.data())),
+      c0(BVec(n, _c0.data())),
+      r0(_r0) {
     // Quadratic constraints
     for (size_t i = 0; i < p; ++i) {
         Qs.push_back(BMat(n, n, _Qs[i].data()));
@@ -137,9 +141,9 @@ QCQP::QCQP(std::vector<double>& _Q0, std::vector<double>& _c0, double _r0,
     }
     rs = BVec(p, _rs.data());
 
-    A1 = BMat(m1, n, _A1.data());
+    A1  = BMat(m1, n, _A1.data());
     A1T = blaze::trans(A1);
-    b1 = BVec(m1, _b1.data());
+    b1  = BVec(m1, _b1.data());
 
     // Lagrange Multipliers
     // lambda = 0
@@ -157,7 +161,7 @@ QCQP::QCQP(std::vector<double>& _Q0, std::vector<double>& _c0, double _r0,
         for (const auto& val : _alphas_tmp) {
             for (size_t i = 0; i < p; ++i) {
                 BVec tmp = blaze::zero<double>(p);
-                tmp[i] = val;
+                tmp[i]   = val;
                 alphas.push_back(tmp);
             }
         }
@@ -189,24 +193,26 @@ QCQP::QCQP(std::vector<double>& _Q0, std::vector<double>& _c0, double _r0,
 
 // Free function: apply the active bounds
 
-std::pair<BMat, BVec>
-apply_active_bounds(const std::vector<size_t>& indices,
-                    const std::vector<double>& active_bounds, BMat& A2_tmp,
-                    BVec& b2_tmp, size_t n, size_t m2) {
-    for (size_t k = 0; k < indices.size(); ++k) {
+std::pair<BMat, BVec> apply_active_bounds(
+    const std::vector<size_t>& indices,
+    const std::vector<double>& active_bounds, BMat& A2_tmp, BVec& b2_tmp,
+    size_t n, size_t m2) {
+    size_t j = 0;
+    for (const auto& k : indices) {
         A2_tmp(m2 + k, indices[k]) = 1.0;
-        b2_tmp[m2 + k] = active_bounds[k];
+        b2_tmp[m2 + k]             = active_bounds[j];
+        ++j;
     }
 
     BMat A2_tmp_T = blaze::trans(A2_tmp);
-    auto jb = helpers::rref(A2_tmp_T);
+    auto jb       = helpers::rref(A2_tmp_T);
     // Set new dimension of A2
     auto new_m2 = jb.size();
     // Extract the base of A2 (i.e. transform A2 to full rank)
 
-    auto A2 = BMat(blaze::submatrix(A2_tmp, 0UL, 0UL, new_m2, n)); // copy
+    auto A2 = BMat(blaze::submatrix(A2_tmp, 0UL, 0UL, new_m2, n));  // copy
     // auto A2T = blaze::trans(A2);
-    auto b2 = BVec(blaze::elements(b2_tmp, jb)); // copy
+    auto b2 = BVec(blaze::elements(b2_tmp, jb));  // copy
     // std::cout << "b2:\n" << b2;
 
     return std::make_pair(A2, b2);
@@ -256,7 +262,7 @@ void QCQP::findBestDualBound(const BMat& A2, const BVec& b2) noexcept {
         // printf("objVal = %lf\n", objVal);
         if (objVal > bestObjVal) {
             bestObjVal = objVal;
-            i_best = i;
+            i_best     = i;
         }
     }
     // Set the best mu
@@ -265,8 +271,14 @@ void QCQP::findBestDualBound(const BMat& A2, const BVec& b2) noexcept {
     bestAlpha = alphas[i_best];
 }
 
-double QCQP::getBestObjVal() const noexcept { return bestObjVal; }
+double QCQP::getBestObjVal() const noexcept {
+    return bestObjVal;
+}
 
-BVec QCQP::getBestAlpha() const noexcept { return bestAlpha; }
+BVec QCQP::getBestAlpha() const noexcept {
+    return bestAlpha;
+}
 
-BVec QCQP::getBestMu() const noexcept { return best_mu; }
+BVec QCQP::getBestMu() const noexcept {
+    return best_mu;
+}
