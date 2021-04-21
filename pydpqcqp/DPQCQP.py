@@ -3,7 +3,10 @@
 import numpy as np
 from scipy.linalg import solve
 from time import perf_counter
-from cyipopt import minimize_ipopt as minimize
+try:
+    from cyipopt import minimize_ipopt as minimize
+except ImportError:
+    print("--- cyipopt not found. Only method='v3' can be used for solve method")
 from ._helpers import rref
 from ._dpqcqp_cpp_wrapper import solveDPQCQP
 

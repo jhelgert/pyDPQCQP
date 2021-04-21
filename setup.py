@@ -81,8 +81,8 @@ setup(
     description='...',
     long_description='',
     packages=find_packages(),
-    ext_modules=[CMakeExtension('pydpqcqp/_dpqcqp_cpp_wrapper')],
+    ext_modules=[CMakeExtension('pyDPQCQP/_dpqcqp_cpp_wrapper')],
     cmdclass=dict(build_ext=CMakeBuild),
-    install_requires=["numpy>=1.13", "cyipopt", "scipy"],
+    install_requires=["numpy>=1.13", "scipy"],
     zip_safe=False,
 )
