@@ -1,5 +1,7 @@
 # pyDPQCQP
 
+![CodeFactor Grade](https://img.shields.io/codefactor/grade/github/jhelgert/pyDPQCQP)
+
 This is a python module for quickly calculating a dual bound
 to the primal problem
 
