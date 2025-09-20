@@ -2,35 +2,35 @@
 
 ![CodeFactor Grade](https://img.shields.io/codefactor/grade/github/jhelgert/pyDPQCQP)
 
-This is a python module for quickly calculating a dual bound
-to the primal problem
+This is a tiny python module for quickly calculating a dual bound to the convex primal problem
 
+```math
+\begin{align*}
+\min_{x \in \mathbb{R}^n}\; f(x) &= \frac12 x^\top Q_0 x + c_0^\top x + r_0 \\
+\text{s.t.} \quad g_k(x) &= \frac12 x^\top Q_k x + c_k^\top x + r_k \leq 0 \quad \forall k = 1,\ldots, p \\
+      h_1(x) &= A_1 x - b_1 \leq 0 \\
+      h_2(x) &= A_2 x - b_2 = 0 \\
+\end{align*}
 ```
-min  f(x) = 0.5 * x' * Q0 * x + c0' * x + r0
- x
-s.t. g_i(x) = 0.5 * x' * Qi * x + ci' * x + r0 <= 0 for all i = 1, .., p
-      h1(x) = A1*x - b1 <= 0
-      h2(x) = A2*x - b2 == 0
-```
 
-- Here all the matrices Q0, ..., Qp are assumed to be symmetric positive definite, 
-i.e. f and g_i are strictly convex and the primal problem is convex.
-- The matrices A1 and A2 have dimensions (m1, n) and (m2, n) with m2 <= n
-and A2 full rank.
-- p is assumed to be small, i.e. only a few quadratic inequality constraints.
+for a very small number $p$ of quadratic constraints like $p < 10$. Here,
+- all the matrices $Q_0,\ldots,Q_p$ are symmetric positive definite
+- $A_1 \in \mathbb{R}^{m_1 \times n}$, $A_2 \in \mathbb{R}^{m_2 \times n}$ and $m_2 \leq n$.
+- the matrix $A_2$ has full rank.
 
-The packages requires an installation of CMake, a decent C++ compiler as well as `cyipopt`, `scipy` and
-`numpy` to interface the IPOPT solver. 
+
+The packages requires an installation of CMake, a decent C++ compiler, as well as `cyipopt`, `scipy` and
+`numpy` to interface with the IPOPT solver. 
 All required C++ libraries (`Blaze`, `pybind11`, ..) will automatically be downloaded by CMake.
 
 ## Install
 
-To install the package, simple clone this repo and
-run
+To install the package, simply clone this repo and run
 
 ``` bash
 python3 setup.py install
 ```
+
 inside the repo folder.
 
 
